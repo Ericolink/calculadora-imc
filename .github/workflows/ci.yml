@@ -5,6 +5,11 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,3 +32,20 @@ jobs:
         run: |
           export PYTHONPATH=$PYTHONPATH:.
           pytest
+
+      - name: Subir archivos HTML como artefacto
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: ./docs   # carpeta donde está tu HTML
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Desplegar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
