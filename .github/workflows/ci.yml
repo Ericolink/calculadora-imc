@@ -2,8 +2,7 @@ name: CI IMC
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: read
@@ -11,7 +10,7 @@ permissions:
   id-token: write
 
 jobs:
-  build:
+  test-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,25 +26,21 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest
 
       - name: Ejecutar pruebas
         run: |
           export PYTHONPATH=$PYTHONPATH:.
           pytest
 
-      - name: Subir archivos HTML como artefacto
+      - name: Subir HTML
         uses: actions/upload-pages-artifact@v2
         with:
-          path: ./docs   # carpeta donde está tu HTML
+          path: ./docs
 
   deploy:
-    needs: build
+    needs: test-and-deploy
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
-      - name: Desplegar en GitHub Pages
-        id: deployment
+      - name: Deploy GitHub Pages
         uses: actions/deploy-pages@v2
